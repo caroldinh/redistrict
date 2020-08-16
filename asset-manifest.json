@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/redistrict/static/css/main.8fc207b4.chunk.css",
+    "main.js": "/redistrict/static/js/main.45591ba0.chunk.js",
+    "main.js.map": "/redistrict/static/js/main.45591ba0.chunk.js.map",
+    "runtime-main.js": "/redistrict/static/js/runtime-main.15bc8b61.js",
+    "runtime-main.js.map": "/redistrict/static/js/runtime-main.15bc8b61.js.map",
+    "static/css/2.11829350.chunk.css": "/redistrict/static/css/2.11829350.chunk.css",
+    "static/js/2.9539c458.chunk.js": "/redistrict/static/js/2.9539c458.chunk.js",
+    "static/js/2.9539c458.chunk.js.map": "/redistrict/static/js/2.9539c458.chunk.js.map",
+    "index.html": "/redistrict/index.html",
+    "precache-manifest.1dd4ea7b13e48b50ce82f73799feb56f.js": "/redistrict/precache-manifest.1dd4ea7b13e48b50ce82f73799feb56f.js",
+    "service-worker.js": "/redistrict/service-worker.js",
+    "static/css/2.11829350.chunk.css.map": "/redistrict/static/css/2.11829350.chunk.css.map",
+    "static/css/main.8fc207b4.chunk.css.map": "/redistrict/static/css/main.8fc207b4.chunk.css.map",
+    "static/js/2.9539c458.chunk.js.LICENSE.txt": "/redistrict/static/js/2.9539c458.chunk.js.LICENSE.txt",
+    "static/media/logo.svg": "/redistrict/static/media/logo.5d5d9eef.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.15bc8b61.js",
+    "static/css/2.11829350.chunk.css",
+    "static/js/2.9539c458.chunk.js",
+    "static/css/main.8fc207b4.chunk.css",
+    "static/js/main.45591ba0.chunk.js"
+  ]
+}
