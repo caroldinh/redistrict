@@ -15,22 +15,46 @@ function App() {
         <container>
             <h1>RedistrictMe</h1>
 
+            <p>Segregated schooling may have been made illegal by <i>Brown vs. Board of Education</i>, but in reality, 
+              many school zones still struggle with de-facto segregation today. 
+              What this means is that some school zones are set up to encompass more wealthy neighborhoods whereas 
+              others are set up to encompass poorer neighborhoods, and because public schools are paid for using tax money 
+              collected from the area, schools in poorer areas have less funding. Combine this with housing segregation and 
+              we get the unfortunate reality that many BIPOC attend underfunded schools.</p>
+              <br></br>
+
+              <p>
+                RedistrictMe is a crowdsourced web application that displays this reality visually. Use the dropdown menus 
+                below to navigate statistics from all of the schools in our database, and take action by composing a letter to your school district's 
+                leadership board using the email template we've generated for you. If your school is not in the database, feel 
+                free to add it.
+              </p>
+
             <br></br><br></br>
 
-            <SchoolData state="Maryland" district="Montgomery County Public Schools" school="Richard Montgomery High School"></SchoolData>
+            <div id="navlinks">
+              <a href="#">Exlore Data</a>
+              <a href="#">Contact Your School Board</a>
+              <a href="#">Add Your School</a>
+              <a href="#">Add Contact</a>
+            </div>
+
+            <br></br><br></br>
+
+            <AllData></AllData>
+
+            <br></br><br></br>
+
+
+            <h3>Add Your School</h3>
+            <p>Add your school's demographic data and graduation statistics using the form below. If you don't know one of the 
+              values, please leave it blank. Enter the full name of your high school, state, and school district (no acronyms please - 
+              "Richard Montgomery High School" rather than "Richard Montgomery HS", "Montgomery County Public Schools" rathern than "MCPS").
+            </p>
+
+            <AddSchool></AddSchool>
             
             <br></br><br></br>
-
-
-            <div class="row">
-              <div class="col-3">
-                Search Districts
-
-              </div>
-              <div class="col-9">
-                Insert explanation here
-              </div>
-            </div>
 
             <div class="footer">
               <a href="#" class="small footerlink">Add Your School</a>
@@ -49,12 +73,104 @@ class AllData extends React.Component {
 
   constructor(props) {
     super(props);
+    this.setState({
+      data:null,
+      loading:true,
+      state:'',
+    });
+
+    this.handleChange = this.handleInputChange.bind(this);
+    //this.handleSubmit = this.handleSubmit.bind(this);
+
+  }
+
+  handleInputChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+
+    if(name == "state"){
+      console.log("District: " + Object.keys(this.state.snapshot.child(target.value).val()));
+      this.state.district = Object.keys(this.state.snapshot.child(target.value).val())[0];
+    }
+
+    this.setState({
+      [name]: value
+    });
+
+    this.forceUpdate();
+
+  }
+
+  componentWillMount(){  
+
+    const ctx = this
+    var db = firebase.database().ref().child("redistrict")
+    this.setState(db.once("value").then(dataSnapshot => {
+      console.log(ctx)
+      var response = dataSnapshot.val();
+      ctx.setState({ data: response, snapshot:dataSnapshot, loading: false, state:Object.keys(response)[0],
+        district: Object.keys(dataSnapshot.child(Object.keys(response)[0]).val())[0],
+        school:"all"
+      });
+      console.log(Object.keys(dataSnapshot.child(Object.keys(response)[0]).val()));
+    }));
+
   }
 
   render() {
-    return (
-      <h1>{this.props.schoolName}</h1>
-    )
+
+    return this.state.data == null ? (
+      <div>
+          <div class="loader"></div>
+      </div>
+      ) : (
+        <form>
+        <label>
+          State:
+          <select name="state" onChange={this.handleChange}>
+            {Object.keys(this.state.data).map(name => (
+              <option value={name}>{name}</option>
+            ))}
+            
+          </select>
+        </label>  
+
+        <label>
+          School District:
+          <select name="district" onChange={this.handleChange}>
+            {Object.keys(this.state.snapshot.child(this.state.state).val()).map(name => (
+              <option value={name}>{name}</option>
+            ))}
+            
+          </select>
+        </label> 
+
+        <label>
+          Schools:
+          <select name="school" onChange={this.handleChange}>
+            <option value="all">All</option>
+            {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => (
+              <option value={name}>{name}</option>
+            ))}
+            
+          </select>
+        </label> 
+
+        {this.state.school != "all" &&
+        <SchoolData state={this.state.state} district={this.state.district} school={this.state.school}></SchoolData>
+        }
+
+      {this.state.school == "all" &&
+        <label>
+          Schools:<br></br>
+          {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => (
+              <SchoolData state={this.state.state} district={this.state.district} school={name}></SchoolData>
+            ))}
+        </label> 
+        }
+      </form>
+    );
   }
 }
 
@@ -69,7 +185,7 @@ class SchoolData extends React.Component {
   }
   componentWillMount(){  
 
-    const ctx = this
+    const ctx = this;
     var db = firebase.database().ref().child("redistrict").child(this.props.state).child(this.props.district).child(this.props.school);
     this.setState(db.once("value").then(dataSnapshot => {
       console.log(ctx)
@@ -77,6 +193,19 @@ class SchoolData extends React.Component {
       ctx.setState({ data: response, loading: false });
     }));
 
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log("New school " + nextProps.school)
+    if (nextProps.school !== this.props.school) {
+      const ctx = this;
+      var db = firebase.database().ref().child("redistrict").child(this.props.state).child(this.props.district).child(nextProps.school);
+      this.setState(db.once("value").then(dataSnapshot => {
+        console.log(ctx)
+        var response = dataSnapshot.val();
+        ctx.setState({ data: response, loading: false });
+      }));
+    }
   }
 
   render() {
@@ -89,11 +218,9 @@ class SchoolData extends React.Component {
       <div class="card">
         <div class="card-header">{this.props.school}</div>
         <div class="card-body">
-        <div class="row">
-          <div class="col-12">
-            <PieChart data={this.state.data.demographics}></PieChart>
-          </div>
-        </div>
+        <PieChart data={this.state.data.demographics}></PieChart><br></br>
+        <p>Graduation rate: {this.state.data.statistics.graduation_rate}</p>
+        <p>Dropout rate: {this.state.data.statistics.dropout_rate}</p>
         </div>    
       </div>
     );
@@ -112,6 +239,7 @@ class PieChart extends React.Component{
       }],
       options:{
         legend: {
+            position:'left',
             labels: {
                 font: {
                   color: '#FFFFFF'
@@ -119,6 +247,28 @@ class PieChart extends React.Component{
             }
         }
       }
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.data !== this.props.data) {
+      this.setState({
+        labels: ["% American Indian / Alaska Native", "% Asian", "% Black", "% Hispanic / Latino", "% Pacific Islander", "% Multiracial / Mixed Race", "% White"],
+      datasets:[{
+        data: [nextProps.data.aian, nextProps.data.asian, nextProps.data.black, nextProps.data.hispanic, nextProps.data.pacific, nextProps.data.multi, nextProps.data.white],
+        backgroundColor: ['red','orange','yellow','green','blue','purple','white'],
+      }],
+      options:{
+        legend: {
+            position:'left',
+            labels: {
+                font: {
+                  color: '#FFFFFF'
+              }
+            }
+        }
+      }
+    });
     }
   }
 
@@ -251,17 +401,15 @@ class AddSchool extends React.Component {
       //var db = firebase.database().ref().child("redistrict").child(this.state.state).child(this.state.county).child(this.state.school);
         
       alert('You have entered data for: ' + this.state.school + " from " + this.state.county + ", " + this.state.state);
-
+      //event.preventDefault();
     }
-
-    //event.preventDefault();
     
   }
 
   render() {
     return (
 
-      <form onSubmit={this.handleSubmit}>
+      <form id="addSchool" onSubmit={this.handleSubmit}>
 
         <div class="row">
               <div class="col-6">
@@ -274,14 +422,15 @@ class AddSchool extends React.Component {
                 <label>
                   State: <input name="state" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Maryland" />
               </label>
-              <label>
+              <br></br>
+              <label class="right-align">
                 Graduation Rate: <input name="graduation" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
               </label>
-              <label>
+              <label class="right-align">
                 Dropout Rate: <input name="dropout" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
               </label>
               </div>
-              <div class="col-6">
+              <div class="col-6 right-align">
                 <strong>Demographics</strong>
               <label>
                   % American Indian/Alaska Native: <input name="aian" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
@@ -306,6 +455,7 @@ class AddSchool extends React.Component {
                 </label>
               </div>
           </div>
+          <br></br>
         <center><input type="submit" value="Submit" class="btn btn-primary"/></center>
       </form>
     );

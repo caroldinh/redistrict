@@ -78,12 +78,14 @@ input{
 
 .stat{
   width:30% !important;
+  text-align:right !important;
 }
 
 .btn{
   background-color:transparent !important;
   border-color: white !important;
   color: white !important;
+  font-size: 24px !important;
 }
 
 .btn:hover{
@@ -108,5 +110,38 @@ input{
 .card{
   background-color:transparent !important;
   border-color: white !important;
-  width:40% !important;
+  width:30% !important;
+  display:inline-block !important;
+  margin-right: 2% !important;
+  margin-bottom: 2% !important;
+  align-content:center !important;
+  text-align:center !important;
+}
+
+.card-header{
+  font-size:24px !important;
+}
+
+p{
+  font-size: 18px !important;
+  margin-bottom: 2px !important;
+  margin-top: 2px !important;
+}
+
+#addSchool{
+  margin-top: 2% !important;
+}
+
+#navlinks{
+  text-align:center;
+}
+
+a{
+  font-size:18px !important;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.right-align{
+  text-align: right !important;
 }
