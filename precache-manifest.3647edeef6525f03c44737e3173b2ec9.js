@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "2df21655e1649cf0fd2e8545acb78193",
+    "revision": "feda4bb7673409d358130b57c899c87c",
     "url": "/redistrict/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/redistrict/static/css/2.11829350.chunk.css"
   },
   {
-    "revision": "387294ab69d8ecf4dd0a",
+    "revision": "f8260f576d8c30ff31f1",
     "url": "/redistrict/static/css/main.8fc207b4.chunk.css"
   },
   {
@@ -20,8 +20,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/redistrict/static/js/2.9539c458.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "387294ab69d8ecf4dd0a",
-    "url": "/redistrict/static/js/main.45591ba0.chunk.js"
+    "revision": "f8260f576d8c30ff31f1",
+    "url": "/redistrict/static/js/main.ffbe2fbd.chunk.js"
   },
   {
     "revision": "0a63fca70eb9c716f28c",
