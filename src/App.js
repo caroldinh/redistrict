@@ -30,21 +30,24 @@ function App() {
                 free to add it.
               </p>
 
-            <br></br><br></br>
+              <br></br>
 
             <div id="navlinks">
-              <a href="#">Exlore Data</a>
-              <a href="#">Contact Your School Board</a>
-              <a href="#">Add Your School</a>
-              <a href="#">Add Contact</a>
+              <a href="#data">Exlore Data</a>
+              <a href="#contact">Contact Your School Board</a>
+              <a href="#addSchool">Add Your School</a>
+              <a href="#addContact">Add Contact</a>
             </div>
 
-            <br></br><br></br>
+            
 
+            <a id="data" class="divider"></a>
+            
             <AllData></AllData>
+            <center class="spacer"><a href="#">Back to top</a></center>
 
-            <br></br><br></br>
 
+            <a id="addSchool" class="divider"></a>
 
             <h3>Add Your School</h3>
             <p>Add your school's demographic data and graduation statistics using the form below. If you don't know one of the 
@@ -53,12 +56,19 @@ function App() {
             </p>
 
             <AddSchool></AddSchool>
+            <center class="spacer"><a href="#">Back to top</a></center>
             
-            <br></br><br></br>
+            <a id="addContact" class="divider"></a>
+
+            <h3>Add Contact Information</h3>
+            <p>Add contact information for the leaders of your state/school district's board of education. </p>
+
+            <AddContact></AddContact>
+            <center class="spacer"><a href="#">Back to top</a></center>
 
             <div class="footer">
-              <a href="#" class="small footerlink">Add Your School</a>
-              <a href="#" class="small footerlink">Add Contact</a>
+              <a href="https://github.com/cyborg48/redistrict" target="_blank" class="small footerlink">GitHub</a>
+              <a href="https://devpost.com/software/redistrict" target="_blank" class="small footerlink">DevPost</a>
               <br></br>
               <p class="small">Built by Caroline Dinh for HellooHacks 2020</p>
             </div>
@@ -90,15 +100,82 @@ class AllData extends React.Component {
     const name = target.name;
 
     if(name == "state"){
-      console.log("District: " + Object.keys(this.state.snapshot.child(target.value).val()));
-      this.state.district = Object.keys(this.state.snapshot.child(target.value).val())[0];
+
+      var newDistrict = Object.keys(this.state.snapshot.child(target.value).val())[0];
+
+      var state_contacts = this.state.snapshot.child(value).child("contacts").val();
+      var state_keys = [];
+      if(state_contacts != null){
+        state_keys = Object.keys(state_contacts);
+      }
+      var dist_contacts = this.state.snapshot.child(value).child(newDistrict).child("contacts").val();
+      var dist_keys = [];
+      if(dist_contacts != null){
+        dist_keys = Object.keys(dist_contacts);
+      }
+      var contacts = [];
+      state_keys.forEach(function(item){
+        contacts.push(state_contacts[item]);
+      });
+      dist_keys.forEach(function(item){
+        contacts.push(dist_contacts[item]);
+      });
+
+      this.setState({
+        data:this.state.data,
+        snapshot:this.state.snapshot,
+        loading:false,
+        state: value,
+        district:newDistrict,
+        school:"all",
+        contacts: contacts,
+      });
     }
 
-    this.setState({
-      [name]: value
-    });
+    if(name == "district"){
 
-    this.forceUpdate();
+      var state_contacts = this.state.snapshot.child(this.state.state).child("contacts").val();
+      var state_keys = [];
+      if(state_contacts != null){
+        state_keys = Object.keys(state_contacts);
+      }
+      var dist_contacts = this.state.snapshot.child(this.state.state).child(value).child("contacts").val();
+      console.log(dist_contacts);
+      var dist_keys = [];
+      if(dist_contacts != null){
+        dist_keys = Object.keys(dist_contacts);
+      }
+      var contacts = [];
+      state_keys.forEach(function(item){
+        contacts.push(state_contacts[item]);
+      });
+      dist_keys.forEach(function(item){
+        contacts.push(dist_contacts[item]);
+      });
+      console.log(contacts);
+
+      this.setState({
+        data:this.state.data,
+        snapshot:this.state.snapshot,
+        loading:false,
+        state: this.state.state,
+        district:value,
+        school:"all",
+        contacts:contacts,
+      });
+    }
+
+    if(name == "school"){
+      this.setState({
+        data:this.state.data,
+        snapshot:this.state.snapshot,
+        loading:false,
+        state: this.state.state,
+        district:this.state.district,
+        school:value,
+        contacts:this.state.contacts,
+      });
+    }
 
   }
 
@@ -107,13 +184,26 @@ class AllData extends React.Component {
     const ctx = this
     var db = firebase.database().ref().child("redistrict")
     this.setState(db.once("value").then(dataSnapshot => {
-      console.log(ctx)
       var response = dataSnapshot.val();
-      ctx.setState({ data: response, snapshot:dataSnapshot, loading: false, state:Object.keys(response)[0],
-        district: Object.keys(dataSnapshot.child(Object.keys(response)[0]).val())[0],
-        school:"all"
+      var state = Object.keys(response)[0];
+      var district = Object.keys(dataSnapshot.child(Object.keys(response)[0]).val())[0];
+      var state_contacts = dataSnapshot.child(state).child("contacts").val();
+      var state_keys = Object.keys(state_contacts);
+      var dist_contacts = dataSnapshot.child(state).child(district).child("contacts").val();
+      var dist_keys = Object.keys(dist_contacts);
+      var contacts = [];
+      state_keys.forEach(function(item){
+        contacts.push(state_contacts[item]);
       });
-      console.log(Object.keys(dataSnapshot.child(Object.keys(response)[0]).val()));
+      dist_keys.forEach(function(item){
+        contacts.push(dist_contacts[item]);
+      });
+      console.log(contacts);
+      ctx.setState({ data: response, snapshot:dataSnapshot, loading: false, state:state,
+        district: district,
+        school:"all",
+        contacts:contacts,
+      });
     }));
 
   }
@@ -125,51 +215,65 @@ class AllData extends React.Component {
           <div class="loader"></div>
       </div>
       ) : (
-        <form>
-        <label>
-          State:
-          <select name="state" onChange={this.handleChange}>
-            {Object.keys(this.state.data).map(name => (
-              <option value={name}>{name}</option>
-            ))}
-            
-          </select>
-        </label>  
+        <div>
+            <form>
+            <label>
+              State:
+              <select name="state" onChange={this.handleChange}>
+                {Object.keys(this.state.data).map(name => (
+                  <option value={name}>{name}</option>
+                ))}
+                
+              </select>
+            </label>  
 
-        <label>
-          School District:
-          <select name="district" onChange={this.handleChange}>
-            {Object.keys(this.state.snapshot.child(this.state.state).val()).map(name => (
-              <option value={name}>{name}</option>
-            ))}
-            
-          </select>
-        </label> 
+            <label>
+              School District:
+              <select name="district" onChange={this.handleChange}>
+                {Object.keys(this.state.snapshot.child(this.state.state).val()).map(name => name != "contacts" ? (
+                  <option value={name}>{name}</option>
+                ): (<div></div>)
+                )}
+                
+              </select>
+            </label> 
 
-        <label>
-          Schools:
-          <select name="school" onChange={this.handleChange}>
-            <option value="all">All</option>
-            {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => (
-              <option value={name}>{name}</option>
-            ))}
-            
-          </select>
-        </label> 
+            <label>
+              Schools:
+              <select name="school" onChange={this.handleChange}>
+                <option value="all">All</option>
+                {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => name != "contacts" ? (
+                  <option value={name}>{name}</option>
+                ) : (<div></div>) 
+                )}
+                
+              </select>
+            </label> 
 
-        {this.state.school != "all" &&
-        <SchoolData state={this.state.state} district={this.state.district} school={this.state.school}></SchoolData>
-        }
+            {this.state.school != "all" &&
+            <SchoolData state={this.state.state} district={this.state.district} school={this.state.school}></SchoolData>
+            }
 
-      {this.state.school == "all" &&
-        <label>
-          Schools:<br></br>
-          {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => (
-              <SchoolData state={this.state.state} district={this.state.district} school={name}></SchoolData>
-            ))}
-        </label> 
-        }
-      </form>
+          {this.state.school == "all" &&
+            <label>
+              Schools:<br></br>
+              {Object.keys(this.state.snapshot.child(this.state.state).child(this.state.district).val()).map(name => name != "contacts" ? (
+                  <SchoolData state={this.state.state} district={this.state.district} school={name}></SchoolData>
+                ) : (<div></div>)
+                )}
+            </label> 
+            }
+          </form>
+          <center class="spacer"><a href="#">Back to top</a></center>
+
+             <a id="contact" class="divider"></a>
+             <h3>Contact your Leaders</h3>
+            <p>Take action against school zone segregation and send your demands directly to the leaders of your school district
+              using the email template below. Using the dropdowns above, select your state and your school district to incorporate it into 
+              the email template.
+            </p>
+            <Letter contacts={this.state.contacts} state={this.state.state} district={this.state.district}></Letter>
+      </div>
     );
   }
 }
@@ -188,7 +292,6 @@ class SchoolData extends React.Component {
     const ctx = this;
     var db = firebase.database().ref().child("redistrict").child(this.props.state).child(this.props.district).child(this.props.school);
     this.setState(db.once("value").then(dataSnapshot => {
-      console.log(ctx)
       var response = dataSnapshot.val();
       ctx.setState({ data: response, loading: false });
     }));
@@ -201,7 +304,22 @@ class SchoolData extends React.Component {
       const ctx = this;
       var db = firebase.database().ref().child("redistrict").child(this.props.state).child(this.props.district).child(nextProps.school);
       this.setState(db.once("value").then(dataSnapshot => {
-        console.log(ctx)
+        var response = dataSnapshot.val();
+        ctx.setState({ data: response, loading: false });
+      }));
+    }
+    if (nextProps.district !== this.props.district) {
+      const ctx = this;
+      var db = firebase.database().ref().child("redistrict").child(this.props.state).child(nextProps.district).child(nextProps.school);
+      this.setState(db.once("value").then(dataSnapshot => {
+        var response = dataSnapshot.val();
+        ctx.setState({ data: response, loading: false });
+      }));
+    }
+    if (nextProps.state !== this.props.state) {
+      const ctx = this;
+      var db = firebase.database().ref().child("redistrict").child(nextProps.state).child(nextProps.district).child(nextProps.school);
+      this.setState(db.once("value").then(dataSnapshot => {
         var response = dataSnapshot.val();
         ctx.setState({ data: response, loading: false });
       }));
@@ -409,65 +527,68 @@ class AddSchool extends React.Component {
   render() {
     return (
 
-      <form id="addSchool" onSubmit={this.handleSubmit}>
+      <div class="card schoolcard">
 
-        <div class="row">
-              <div class="col-6">
-              <label>
-                  School: <input name="school" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} required />
-                </label>
+        <form id="addSchool" onSubmit={this.handleSubmit}>
+
+          <div class="row">
+                <div class="col-6">
                 <label>
-                  School District: <input name="county" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Montgomery County Public Schools"/>
+                    School: <input name="school" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} required />
+                  </label>
+                  <label>
+                    School District: <input name="county" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Montgomery County Public Schools"/>
+                  </label>
+                  <label>
+                    State: <input name="state" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Maryland" />
                 </label>
+                <br></br>
+                <label class="right-align">
+                  Graduation Rate: <input name="graduation" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                </label>
+                <label class="right-align">
+                  Dropout Rate: <input name="dropout" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                </label>
+                </div>
+                <div class="col-6 right-align">
+                  <strong>Demographics</strong>
                 <label>
-                  State: <input name="state" class="long-input" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Maryland" />
-              </label>
-              <br></br>
-              <label class="right-align">
-                Graduation Rate: <input name="graduation" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-              </label>
-              <label class="right-align">
-                Dropout Rate: <input name="dropout" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-              </label>
-              </div>
-              <div class="col-6 right-align">
-                <strong>Demographics</strong>
-              <label>
-                  % American Indian/Alaska Native: <input name="aian" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % Asian: <input name="asian" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % Black/African American: <input name="black" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % Hispanic/Latino (of any race): <input name="hispanic" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % Pacific Islander: <input name="pacific" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % White: <input name="white" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
-                </label>
-                <label>
-                  % Multiracial/Mixed race: <input name="multi" class="stat" type="number" step="0.1" min="0" max="100"value={this.state.value} onChange={this.handleChange} />
-                </label>
-              </div>
-          </div>
-          <br></br>
-        <center><input type="submit" value="Submit" class="btn btn-primary"/></center>
-      </form>
+                    % American Indian/Alaska Native: <input name="aian" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % Asian: <input name="asian" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % Black/African American: <input name="black" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % Hispanic/Latino (of any race): <input name="hispanic" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % Pacific Islander: <input name="pacific" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % White: <input name="white" class="stat" type="number" step="0.1" min="0" max="100" value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                  <label>
+                    % Multiracial/Mixed race: <input name="multi" class="stat" type="number" step="0.1" min="0" max="100"value={this.state.value} onChange={this.handleChange} />
+                  </label>
+                </div>
+            </div>
+          <center><input type="submit" value="Submit" class="btn btn-primary"/></center>
+        </form>
+      </div>
     );
   }
 }
-
 
 class AddContact extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       type: 'state',
+      state: '',
+      district: '',
       contactname: '',
       email: '',
     };
@@ -506,49 +627,142 @@ class AddContact extends React.Component {
       alert("Email may not be blank");
     } else{
       if(this.state.type == "state"){
-        var db = firebase.database().ref().child("redistrict").child(this.state.state).child("contacts")
-        db.push({
-          [this.state.contactname]:this.state.email
-        });
-        // alert('Submission: ' + this.state.school + " from " + this.state.county + ", " + this.state.state);
+        var db = firebase.database().ref().child("redistrict").child(this.state.state).child("contacts");
+        db.push({[this.state.contactname]:this.state.email});
       } else {
-        var db = firebase.database().ref().child("redistrict").child(this.state.state).child(this.state.district).child("contacts")
-        db.push({
-          [this.state.contactname]:this.state.email
-        });
+        var db = firebase.database().ref().child("redistrict").child(this.state.state).child(this.state.district).child("contacts");
+        db.push({[this.state.contactname]:this.state.email});
       }
     }
 
-    event.preventDefault();
+    alert("Added contact");
     
   }
 
   render() {
     return (
 
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          Contact Type:
-          <select name="type" onChange={this.handleChange}>
-            <option value="state">State</option>
-            <option value="district">District</option>
-          </select>
-        </label>
-        <label>
-          State: <input name="state" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Maryland"/>
-        </label>
-        <label>
-          School District (if applicable): <input name="district" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Montgomery County Public Schools"/>
-        </label>
-        <label>
-          Contact Name: <input name="contactname" type="text" value={this.state.value} onChange={this.handleChange} placeholder="Board of Education"/>
-        </label>
-        <label>
-          Email: <input name="email" type="email" value={this.state.value} onChange={this.handleChange} placeholder="boe@mcpsmd.org"/>
-        </label>
+      <div class="card schoolcard">
+        <form onSubmit={this.handleSubmit}>
+          <label>
+            Contact Type:
+            <select name="type" onChange={this.handleChange}>
+              <option value="state">State</option>
+              <option value="district">District</option>
+            </select>
+          </label>
+          <label>
+            State: <input name="state" class="long-input"  type="text" value={this.state.value} onChange={this.handleChange} placeholder="Maryland" required/>
+          </label>
+          <label>
+            School District (if applicable): <input name="district" class="long-input"  type="text" value={this.state.value} onChange={this.handleChange} placeholder="Montgomery County Public Schools"/>
+          </label>
+          <label>
+            Contact Name: <input name="contactname" class="long-input"  type="text" value={this.state.value} onChange={this.handleChange} placeholder="Board of Education" required/>
+          </label>
+          <label>
+            Email: <input name="email" class="long-input" type="email" value={this.state.value} onChange={this.handleChange} placeholder="boe@mcpsmd.org" required/>
+          </label>
+          
+          <input type="submit" class="btn" value="Submit" />
+        </form>
+      </div>
+    );
+  }
+}
+
+class Letter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name:'',
+      email:'',
+      observations:'',
+      personal:'',
+    };
+    this.handleChange = this.handleInputChange.bind(this);
+  }
+
+  handleInputChange(event) {
+    const target = event.target;
+    const value = target.value;
+    const name = target.name;
+
+      this.setState({
+        [name]: value
+      });
+
+  }
+
+  render() {
+    return (
+
+      <div class="card schoolcard">
+
+        <div class="row">
+        <div class="col-6">
+
+        <form>
+          <label>
+            Your name: <input name="name" class="long-input"  type="text" value={this.state.value} onChange={this.handleChange} required/>
+          </label>
+          <label>
+            Your email: <input name="email" class="long-input"  type="email" value={this.state.value} onChange={this.handleChange} required/>
+          </label>
+          <label>
+            Your observations:
+            <p class="prompt">What did you notice about the data? For the schools with higher graduation rates, what trend did you see in the 
+              demographics? What about for the schools with lower graduation rates? Why do you thiink this is? 
+              Where there any schools that didn't follow this trend?
+            </p>
+             <textarea name="observations" class="long-input" value={this.state.value} onChange={this.handleChange} placeholder="While reviewing
+             statistics about schools in our county, I noticed..." required/>
+          </label>
+          <label>
+            Why this is important to you:
+            <p class="prompt">Do you have any personal experiences related to schooling and segregation? Anything you've noticed within 
+            your own school or community? Why is it important to you? Do you have any additional demands? Your leaders are more likely to 
+            listen if you send them a personalized letter - be sure to add your own take to the template so that your email isn't marked as spam.
+            </p>
+             <textarea name="personal" class="long-input" value={this.state.value} onChange={this.handleChange} placeholder="While reviewing
+             statistics about schools in our county, I noticed..." required/>
+          </label>
+          <p>After filling in this information, open your inbox and copy and paste the email on the right into a new message. Copy 
+            and paste the contacts into the recipients bar and the subject line into the subject bar, and you're good to go! </p>
+        </form>
+
+        </div>
+        <div class="col-6">
+          <h4>From: <div class="contact-email">{this.state.email}</div></h4>
+          <h4>To: {Object.keys(this.props.contacts).map(key =>
+            <div class="email-list"><div class="contact-email">{this.props.contacts[key][Object.keys(this.props.contacts[key])]}</div>,</div>
+            )}</h4>
+          <h4>Subject: <strong>Our Schools Are Still Segregated</strong></h4><br></br>
+          <div class="letter">
+          <p class="letter-paragraph">To whom it may concern,</p>
+          <p class="letter-paragraph">I am a student from {this.props.district} in {this.props.state} and I am writing to demand 
+          that you take action against segregated schooling. While <i>de jure</i> segregation may be illegal, <i>de facto</i> segregation 
+          is still the reality all across America, and {this.props.district} is no exception. BIPOC students, especially
+          those in poorer areas, are more likely than their white counterparts to attend an underfunded school. Hence, these students 
+          have lesser access to the mentorship, technology, and quality courses than students in wealthier schools. Furthermore, 
+          schools with higher concentration of BIPOC are more heavily monitored by police, which is absolutely unnecessary.</p>
+          <p class="letter-paragraph">{this.state.observations}</p>
+          <p class="letter-paragraph">{this.state.personal}</p>
+          <p class="letter-paragraph">In light of all this, I am urging you to consider the school zones established by {this.props.district} and 
+          redistrict. Due to segregated school zoning, many BIPOC students don't have the same opportunities that their white 
+          counterparts do, and this is unacceptable. </p>
+          <p class="letter-paragraph">Beyond redistricting, I demand that you take action to provide BIPOC with the educational opportunities they deserve,
+          from increasing the funding of and decreasing the policing of their schools, giving them more opportunities to join accelerated courses, and revising the curricula of English and history 
+          classes to represent their narratives in the classroom. Separate is inherently unequal as ruled by <i>Brown v. Board of Education</i>. As a leader 
+          in public education, it is your responsibility to uphold this legacy and take action to make {this.props.district} a fully 
+          integrated school district.</p>
+          <p class="letter-paragraph">Regards,</p>
+          <p class="letter-paragraph">{this.state.name}</p>
+          </div>
+          </div>
+        </div>
         
-        <input type="submit" value="Submit" />
-      </form>
+      </div>
     );
   }
 }

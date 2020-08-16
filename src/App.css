@@ -1,3 +1,7 @@
+html{
+  scroll-behavior:smooth;
+}
+
 .App {
   /*text-align: ; */
 }
@@ -86,6 +90,7 @@ input{
   border-color: white !important;
   color: white !important;
   font-size: 24px !important;
+  margin-top: 2% !important;
 }
 
 .btn:hover{
@@ -116,6 +121,7 @@ input{
   margin-bottom: 2% !important;
   align-content:center !important;
   text-align:center !important;
+  margin-top: 2% !important;
 }
 
 .card-header{
@@ -144,4 +150,64 @@ a{
 
 .right-align{
   text-align: right !important;
+  align-self: right !important;
+  align-content: right !important;
+  align-items: right !important;
+}
+
+.contactcard{
+  width: 50% !important;
+  align-content:left !important;
+  align-items: left !important;
+  text-align: left !important;
+  padding: 2% !important;
+}
+
+.schoolcard{
+  width: 100% !important;
+  padding: 2% !important;
+}
+
+.contact-email{
+  display: inline-block !important;
+  background-color: #3498db !important;
+  border-color: white !important;
+  border-radius: 10px !important;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.email-list{
+  display:inline-block !important;
+}
+
+.letter{
+  text-align: left !important;
+}
+
+.letter-paragraph{
+  margin-bottom: 2% !important;
+  text-indent: 5% !important;
+}
+
+textarea{
+  font-size:18px !important;
+  height: 150px !important;
+}
+
+.prompt{
+  text-align: left !important;
+  margin-bottom: 8px !important;
+  font-size: 14px !important;
+}
+
+.divider{
+  margin-top: 50px !important;
+}
+
+.spacer{
+  margin-top: 5% !important;
+  margin-bottom: 5% !important;
 }
