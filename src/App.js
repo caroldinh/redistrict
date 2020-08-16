@@ -463,13 +463,14 @@ class AddSchool extends React.Component {
     if(isNaN(this.state.pacific)){this.state.pacific=0;}
     if(isNaN(this.state.multi)){this.state.multi=0;}
     if(isNaN(this.state.white)){this.state.white=0;}
-    if(isNaN(this.state.graduation)){this.state.graduation=0;}
-    if(isNaN(this.state.dropout)){this.state.dropout=0;}
+    if(isNaN(this.state.graduation)){this.state.graduation="N/A";}
+    if(isNaN(this.state.dropout)){this.state.dropout="N/A";}
     if((parseFloat(this.state.asian) + parseFloat(this.state.aian) + parseFloat(this.state.black) + 
     parseFloat(this.state.hispanic) + parseFloat(this.state.pacific) + parseFloat(this.state.multi) + parseFloat(this.state.white)) > 100.0 ){
         alert("Error: Percentages may not sum to over 100")
     } else{
 
+      /*** 
       if(this.state.graduation == 0){ // If no graduation data
 
         if((parseFloat(this.state.asian) + parseFloat(this.state.aian) + parseFloat(this.state.black) + 
@@ -499,6 +500,8 @@ class AddSchool extends React.Component {
             dropout_rate: this.state.dropout,
         });
       } else{
+
+        ***/
         var db = firebase.database().ref().child("redistrict").child(this.state.state).child(this.state.county).child(this.state.school);
         db.set({
           demographics:{
@@ -514,7 +517,6 @@ class AddSchool extends React.Component {
             dropout_rate: this.state.dropout,
         }
         });
-      }
 
       //var db = firebase.database().ref().child("redistrict").child(this.state.state).child(this.state.county).child(this.state.school);
         
